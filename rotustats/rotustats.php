@@ -37,8 +37,6 @@ foreach($db->query('SELECT name, kills, damageDealt FROM rotustats_player WHERE 
     $killdmg[]=array($kills[0],$kills[1],$kills[2]);
 }
 
-
-var_dump($killdmg);
 ?>
 
 <script>
