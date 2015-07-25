@@ -13,7 +13,7 @@ You can find more information at:
 * B3/ManuAdminMod with rotustats plugin
 
 ###### Installation:
-* Copy the rotustats folder in your weberserver root directory.
+* Copy the rotustats folder in your webserver root directory.
 * Edit this line with your database setting and user/password:
 $db = new PDO('mysql:host=localhost;dbname=rotu;charset=utf8', 'root', '');
 
