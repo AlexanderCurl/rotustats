@@ -1,21 +1,34 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="https://code.highcharts.com/highcharts.js"></script>
 
+<div style="float: left; width: 50%;">
+<img src="https://alexc.hu/rotustats.png" style="float: right; height: 250px;">
+</div>
+<div style="float: left; width: 50%; height: 250px;">
 <?php
-    
-$gameid = $_GET['id'] or die('nincs gameID');
-    
-$db = new PDO('mysql:host=localhost;dbname=yourdbnamehere;charset=utf8', 'root', 'yoursecretpassword');
+
+// DB kapcsolat
+$db = new PDO('mysql:host=localhost;dbname=rotu;charset=utf8', 'root', '');
+
+// gameID, fallback utolso
+$sth = $db->prepare('SELECT id FROM rotustats_game ORDER BY id DESC LIMIT 1 ');
+$sth->execute();
+$lastid = $sth->fetchColumn();
+
+@$gameid = $_GET['id']?$_GET['id']:$lastid;
+
 foreach($db->query('SELECT * FROM rotustats_game WHERE id='.$gameid) as $row) {
-    echo $row['version'];
+    echo "<h2>".$row['version']." #$gameid</h2>";
+    echo "<a href='".$_SERVER['PHP_SELF']."?id=".($gameid-1)."'>&lt;&lt; Previous </a>";
+    if ($gameid!=$lastid) { echo "<a href='".$_SERVER['PHP_SELF']."?id=".($gameid+1)."'> Next &gt;&gt;</a>"; }
+    echo '<br><h3>';
+    echo $row['win']?'<font color="green">WIN</font>':'<font color="red">LOSE</font>';
+    echo '</h3><br><b>';
+    echo $row['zombiesKilled'].'</b> zombies killed';
     echo '<br>';
-    echo $row['win']?'NYERTES':'VESZTES';
+    echo 'Duration: '.gmdate("H:i:s", $row['gameDuration']/1000);
     echo '<br>';
-    echo $row['zombiesKilled'].' zombi megolve';
-    echo '<br>';
-    echo 'Idotartam: '.gmdate("H:i:s", $row['gameDuration']/1000);
-    echo '<br>';
-    echo 'Hullamok: '.$row['waveNumber'];
+    echo 'Waves: '.$row['waveNumber'];
     echo '<br>';
     echo 'Map: '.$row['mapname'];
     echo '<br>';
@@ -24,8 +37,10 @@ foreach($db->query('SELECT * FROM rotustats_game WHERE id='.$gameid) as $row) {
 
 ?>
 
-<div id="roledist" style="width:40%; height:400px;"></div>
-<div id="killdmg" style="width:40%; height:400px;"></div>
+</div>
+
+<div id="roledist" style="width:50%; height:300px; margin-top: 50px; float: left;"></div>
+<div id="killdmg" style="width:50%; height:300px; margin-top: 50px; float: left;"></div>
 
 <?php
 /* Kasztok */
@@ -43,13 +58,14 @@ foreach($db->query('SELECT name, kills, damageDealt FROM rotustats_player WHERE 
 $(function () {
     $('#roledist').highcharts({
         chart: {
+            backgroundColor: null,
             type: 'pie'
         },
         title: {
-            text: 'Szerepek eloszlasa'
+            text: 'Role distribution'
         },
         series: [{
-            name: 'Darab',
+            name: 'People',
             data: [
             <?php if(isset($roledist['medic'])) { ?>
             {
@@ -95,8 +111,11 @@ $(function () {
 
 $(function () {
     $('#killdmg').highcharts({
+        chart: {
+            backgroundColor: null
+        },
         title: {
-            text: 'Killek es sebzes'
+            text: 'Kills and damage'
         },
         xAxis: {
             categories: [<?php foreach($killdmg as $k) { echo "'$k[0]',"; } ?>]
@@ -104,12 +123,12 @@ $(function () {
         yAxis: [{},{min: 0, opposite: true}],
         series: [ {
             type: 'column',
-            name: 'Killek',
+            name: 'Kills',
             data: [<?php foreach($killdmg as $k) { echo "$k[1],"; } ?>]
         }, {
             type: 'spline',
             yAxis: 1,
-            name: 'Sebzes',
+            name: 'Damage',
             data: [<?php foreach($killdmg as $k) { echo "$k[2],"; } ?>]
         }]
     });
