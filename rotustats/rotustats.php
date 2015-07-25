@@ -56,7 +56,7 @@ foreach($db->query('SELECT name, kills, damageDealt FROM rotustats_player WHERE 
     $killdmg[]=array($kills[0],$kills[1],$kills[2]);
 }
 /* Medic */
-foreach($db->query('SELECT name, revives, healsGiven FROM rotustats_player WHERE id='.$gameid.' AND role=\'medic\'') as $heals) {
+foreach($db->query('SELECT name, healsGiven, revives FROM rotustats_player WHERE id='.$gameid.' AND role=\'medic\'') as $heals) {
     $healsrevive[]=array($heals[0],$heals[1],$heals[2]);
 }
 /* Engineer */
