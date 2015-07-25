@@ -7,10 +7,10 @@
 <div style="float: left; width: 50%; height: 250px;">
 <?php
 
-// DB kapcsolat
+// DB connection
 $db = new PDO('mysql:host=localhost;dbname=rotu;charset=utf8', 'root', '');
 
-// gameID, fallback utolso
+// gameID, fallback last game
 $sth = $db->prepare('SELECT id FROM rotustats_game ORDER BY id DESC LIMIT 1 ');
 $sth->execute();
 $lastid = $sth->fetchColumn();
@@ -42,14 +42,30 @@ foreach($db->query('SELECT * FROM rotustats_game WHERE id='.$gameid) as $row) {
 <div id="roledist" style="width:50%; height:300px; margin-top: 50px; float: left;"></div>
 <div id="killdmg" style="width:50%; height:300px; margin-top: 50px; float: left;"></div>
 
+<div id="healsrevive" style="width:33%; height:300px; margin-top: 50px; float: left;"></div>
+<div id="ammoturret" style="width:33%; height:300px; margin-top: 50px; float: left;"></div>
+<div id="headshots" style="width:33%; height:300px; margin-top: 50px; float: left;"></div>
+
 <?php
-/* Kasztok */
+/* Classes */
 foreach($db->query('SELECT role, COUNT(*) FROM rotustats_player WHERE id='.$gameid.' GROUP BY role') as $roles) {
     $roledist[$roles[0]]=$roles[1];
 }
-
+/* Kills and dmg */
 foreach($db->query('SELECT name, kills, damageDealt FROM rotustats_player WHERE id='.$gameid.'') as $kills) {
     $killdmg[]=array($kills[0],$kills[1],$kills[2]);
+}
+/* Medic */
+foreach($db->query('SELECT name, revives, healsGiven FROM rotustats_player WHERE id='.$gameid.' AND role=\'medic\'') as $heals) {
+    $healsrevive[]=array($heals[0],$heals[1],$heals[2]);
+}
+/* Engineer */
+foreach($db->query('SELECT name, ammoGiven, turretKills FROM rotustats_player WHERE id='.$gameid.' AND role=\'engineer\'') as $supply) {
+    $ammoturret[]=array($supply[0],$supply[1],$supply[2]);
+}
+/* Scout */
+foreach($db->query('SELECT name, headshotKills FROM rotustats_player WHERE id='.$gameid.' AND role=\'scout\'') as $hs) {
+    $headshots[]=array($hs[0],$hs[1]);
 }
 
 ?>
@@ -120,7 +136,7 @@ $(function () {
         xAxis: {
             categories: [<?php foreach($killdmg as $k) { echo "'$k[0]',"; } ?>]
         },
-        yAxis: [{},{min: 0, opposite: true}],
+        yAxis: [{title: {text: 'Kills'}},{title: {text: 'Damage'}, min: 0, opposite: true}],
         series: [ {
             type: 'column',
             name: 'Kills',
@@ -133,4 +149,91 @@ $(function () {
         }]
     });
 });
+<?php 
+    if(isset($healsrevive)) {
+    ?>
+$(function () {
+    $('#healsrevive').highcharts({
+        chart: {
+            backgroundColor: null
+        },
+        title: {
+            text: 'Best medic'
+        },
+        xAxis: {
+            categories: [<?php foreach($healsrevive as $h) { echo "'$h[0]',"; } ?>]
+        },
+        yAxis: [{title: {text: 'Heals'}},{title: {text: 'Revive'}, min: 0, opposite: true}],
+        series: [ {
+            type: 'column',
+            name: 'Heals',
+            data: [<?php foreach($healsrevive as $h) { echo "$h[1],"; } ?>]
+        }, {
+            type: 'spline',
+            yAxis: 1,
+            name: 'Revive',
+            data: [<?php foreach($healsrevive as $h) { echo "$h[2],"; } ?>]
+        }]
+    });
+});
+<?php 
+    }
+    if(isset($ammoturret)) {
+    ?>
+$(function () {
+    $('#ammoturret').highcharts({
+        chart: {
+            backgroundColor: null
+        },
+        title: {
+            text: 'Best engineer'
+        },
+        xAxis: {
+            categories: [<?php foreach($ammoturret as $a) { echo "'$a[0]',"; } ?>]
+        },
+        yAxis: [{title: {text: 'Ammo Given'}},{title: {text: 'turret Kills'}, min: 0, opposite: true}],
+        series: [ {
+            type: 'column',
+            name: 'Ammo given',
+            data: [<?php foreach($ammoturret as $a) { echo "$a[1],"; } ?>]
+        }, {
+            type: 'spline',
+            yAxis: 1,
+            name: 'Turret kills',
+            data: [<?php foreach($ammoturret as $a) { echo "$a[2],"; } ?>]
+        }]
+    });
+});
+<?php 
+    }
+    if(isset($headshots)) {
+    ?>
+$(function () {
+    $('#headshots').highcharts({
+        chart: {
+            backgroundColor: null
+        },
+        title: {
+            text: 'Best scout'
+        },
+        xAxis: {
+            categories: [<?php foreach($headshots as $ah) { echo "'$h[0]',"; } ?>]
+        },
+        yAxis: [{title: {text: 'Headshots'}},{title: {text: ''}, min: 0, opposite: true}],
+        series: [ {
+            type: 'column',
+            name: 'Headshots',
+            data: [<?php foreach($headshots as $h) { echo "$h[1],"; } ?>]
+        }]
+    });
+});
+<?php
+    }
+    ?>
 </script>
+<div style="text-align: center; width: 100%; float: left;">
+&copy; created by Mikopet based on Puffyforum.com ideas
+</div>
+<!-- everybody knows, we are not supposed to use center, and other deprecated shit, but i dont have energy to thinking, and dont give a shit about spagetti code
+    in the next version i take a care of it -->
+    
