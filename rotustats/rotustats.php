@@ -217,13 +217,13 @@ $(function () {
             text: 'Best scout'
         },
         xAxis: {
-            categories: [<?php foreach($headshots as $ah) { echo "'$h[0]',"; } ?>]
+            categories: [<?php foreach($headshots as $s) { echo "'$s[0]',"; } ?>]
         },
-        yAxis: [{title: {text: 'Headshots'}},{title: {text: ''}, min: 0, opposite: true}],
+        yAxis: [{title: {text: 'Headshots'}}],
         series: [ {
             type: 'column',
             name: 'Headshots',
-            data: [<?php foreach($headshots as $h) { echo "$h[1],"; } ?>]
+            data: [<?php foreach($headshots as $s) { echo "$s[1],"; } ?>]
         }]
     });
 });
