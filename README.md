@@ -1,6 +1,6 @@
 #### RotU-Stats for Call of Duty 4 Reign of the Undead - Revolution Zombie Mod
 
-This is a PHP written code to MaM/B3 rotustats plugin.
+This is a PHP written frontend for MaM/B3 rotustats plugin.
 You can find more information at:
 * http://rotu-revolution.com
 * http://bigbrotherbot.net
